@@ -1,0 +1,433 @@
+AC_INIT(src)
+
+AM_CONFIG_HEADER(config.h)
+AM_INIT_AUTOMAKE(irssi, 0.7.94)
+
+AM_MAINTAINER_MODE
+
+AC_ISC_POSIX
+AC_PROG_CC
+AC_PROG_CPP
+AC_STDC_HEADERS
+AC_ARG_PROGRAM
+AM_PROG_LIBTOOL
+
+AC_CHECK_HEADERS(string.h stdlib.h unistd.h dirent.h sys/ioctl.h libintl.h)
+
+AC_ARG_WITH(socks,
+[  --with-socks            Build with socks support],
+	if test x$withval = xyes; then
+    		want_socks=yes
+	else
+    		if test "x$withval" = xno; then
+        		want_socks=no
+    		else
+        		want_socks=yes
+    		fi
+	fi,
+	want_socks=no)
+
+AC_ARG_WITH(mysql,
+[  --with-mysql            Build MySQL plugin],
+	if test x$withval = xyes; then
+    		want_mysql=yes
+		MYSQL_LIBS="-L/usr/lib/mysql -lmysqlclient"
+	else
+    		if test "x$withval" = xno; then
+        		want_mysql=no
+    		else
+        		want_mysql=yes
+			MYSQL_LIBS="-L$withval/lib/mysql -lmysqlclient"
+    		fi
+	fi,
+	want_mysql=no)
+
+AC_ARG_WITH(textui,
+[  --with-textui           Build text frontend],
+	if test x$withval = xyes; then
+    		want_textui=yes
+	else
+		if test "x$withval" = xno; then
+			want_textui=no
+		else
+        		want_textui=yes
+		fi
+	fi,
+	want_textui=yes)
+
+AC_ARG_WITH(bot,
+[  --with-bot              Build irssi-bot],
+	if test x$withval = xyes; then
+    		want_irssibot=yes
+	else
+		if test "x$withval" = xno; then
+			want_irssibot=no
+		else
+        		want_irssibot=yes
+		fi
+	fi,
+	want_irssibot=yes)
+
+AC_ARG_WITH(modules,
+[  --with-modules          Specify what modules to build in binary],
+	build_modules="$withval")
+
+if test "x$prefix" = "xNONE"; then
+	PERL_LIB_DIR=""
+else
+	PERL_LIB_DIR="$prefix"
+fi
+
+AC_ARG_ENABLE(perl,
+[  --enable-perl[=dir]     Enable Perl scripting, you can specify the Perl libraries installation path],
+	if test x$enableval = xyes; then
+    		want_perl=yes
+	else
+		if test "x$enableval" = xno; then
+			want_perl=no
+		else
+        		want_perl=yes
+			PERL_LIB_DIR="$enableval"
+		fi
+	fi,
+	want_perl=yes)
+
+AC_ARG_WITH(servertest,
+[  --with-servertest       Build servertest],
+	if test x$withval = xyes; then
+    		want_servertest=yes
+	else
+		if test "x$withval" = xno; then
+			want_servertest=no
+		else
+        		want_servertest=yes
+		fi
+	fi,
+	want_servertest=no)
+
+AC_ARG_ENABLE(memdebug,
+[  --enable-memdebug       Enable memory debugging],
+	if test x$enableval = xyes; then
+    		want_memdebug=yes
+	else
+    		if test "x$enableval" = xno; then
+        		want_memdebug=no
+    		else
+        		want_memdebug=yes
+    		fi
+	fi,
+	want_memdebug=no)
+
+AC_ARG_ENABLE(ipv6,
+[  --enable-ipv6           Enable IPv6 support],
+	if test x$enableval = xyes; then
+    		want_ipv6=yes
+	else
+    		if test "x$enableval" = xno; then
+        		want_ipv6=no
+    		else
+        		want_ipv6=yes
+    		fi
+	fi,
+	want_ipv6=no)
+
+dnl **
+dnl ** just some generic stuff...
+dnl **
+
+AC_CHECK_FUNCS(mkfifo fcntl)
+
+AC_CHECK_LIB(socket, socket, [
+	PROG_LIBS="$PROG_LIBS -lsocket"
+])
+
+AC_CHECK_LIB(nsl, inet_addr, [
+	PROG_LIBS="$PROG_LIBS -lnsl"
+], -lsocket)
+
+dnl * gcc specific options
+if test "x$ac_cv_prog_gcc" = "xyes"; then
+  CFLAGS="$CFLAGS -Wall"
+fi
+
+dnl * socklen_t - AC_CHECK_TYPE() would be _really_ useful if it only would
+dnl * accept header files where to find the typedef..
+AC_MSG_CHECKING([for socklen_t])
+AC_CACHE_VAL(irssi_cv_type_socklen_t,
+[AC_TRY_COMPILE([
+#include <sys/types.h>
+#include <sys/socket.h>],
+[socklen_t t;],
+irssi_cv_type_socklen_t=yes,
+irssi_cv_type_socklen_t=no,
+)])
+if test $irssi_cv_type_socklen_t = no; then
+AC_DEFINE(socklen_t, int, Define to 'int' if <sys/socket.h> doesn't define.)
+fi
+AC_MSG_RESULT($irssi_cv_type_socklen_t)
+
+dnl **
+dnl ** check for socks
+dnl **
+
+if test "x$want_socks" = "xyes"; then
+	AC_CHECK_LIB(socks, connect, [
+		PROG_LIBS="$PROG_LIBS -lsocks"
+		AC_CHECK_HEADER(socks.h, [
+			AC_DEFINE(HAVE_SOCKS_H)
+			CFLAGS="$CFLAGS -DSOCKS"
+			AC_MSG_RESULT(["socks5 library found, building with it"])
+		], [
+			AC_MSG_RESULT(["socks4 library found, building with it"])
+			CFLAGS="$CFLAGS -Dconnect=Rconnect -Dgetsockname=Rgetsockname -Dgetpeername=Rgetpeername -Dbind=Rbind -Daccept=Raccept -Dlisten=Rlisten -Dselect=Rselect"
+		])
+	])
+fi
+
+dnl **
+dnl ** fe-text checks
+dnl **
+
+AM_PATH_GLIB(1.2.0,,, gmodule)
+
+PROG_LIBS="$PROG_LIBS $GLIB_LIBS"
+AC_SUBST(PROG_LIBS)
+
+dnl **
+dnl ** curses checks
+dnl **
+
+if test "x$want_textui" = "xyes"; then
+	saved_LIBS="$LIBS"
+	AC_CHECK_CURSES
+	LIBS="$saved_LIBS"
+
+	if test "x$has_ncurses" != "x"; then
+		AC_CHECK_LIB(ncurses, use_default_colors, [
+			AC_DEFINE(HAVE_NCURSES_USE_DEFAULT_COLORS)
+		],, $CURSES_LIBS)
+		AC_CHECK_LIB(ncurses, idcok, [
+			AC_DEFINE(HAVE_CURSES_IDCOK)
+		],, $CURSES_LIBS)
+		AC_CHECK_LIB(ncurses, resizeterm, [
+			AC_DEFINE(HAVE_CURSES_RESIZETERM)
+		],, $CURSES_LIBS)
+	else
+		AC_CHECK_LIB(curses, idcok, [
+			AC_DEFINE(HAVE_CURSES_IDCOK)
+		],, $CURSES_LIBS)
+		AC_CHECK_LIB(curses, resizeterm, [
+			AC_DEFINE(HAVE_CURSES_RESIZETERM)
+		],, $CURSES_LIBS)
+	fi
+
+	if test "$has_curses" != "true"; then
+		want_textui=no;
+		curses_error=yes
+        fi
+else
+	has_curses=false
+fi
+
+AC_PATH_PROG(sedpath, sed)
+if test "$want_perl" = yes; then
+	AC_PATH_PROG(perlpath, perl)
+	AC_MSG_CHECKING(for Perl compile flags)
+
+	PERL_CFLAGS=`$perlpath -MExtUtils::Embed -e ccopts 2>/dev/null`
+	if test "x$PERL_CFLAGS" = "x"; then
+		AC_MSG_RESULT([not found, building without perl.])
+		want_perl=no
+	else
+		PERL_LDFLAGS=`$perlpath -MExtUtils::Embed -e ldopts |$sedpath 's/-lgdbm //'`
+		PERL_LDFLAGS=`echo $PERL_LDFLAGS |$sedpath 's/-ldb //'`
+		PERL_LDFLAGS=`echo $PERL_LDFLAGS |$sedpath 's/-lndbm //'`
+		if test "$system" = "Linux"; then
+			PERL_LDFLAGS=`echo $PERL_LDFLAGS |$sedpath 's/-lnsl //'`
+			PERL_LDFLAGS=`echo $PERL_LDFLAGS |$sedpath 's/-lposix //'`
+		fi
+		PERL_LDFLAGS=`echo $PERL_LDFLAGS |$sedpath 's/-lc //'`
+		AC_MSG_RESULT(ok)
+
+		AC_SUBST(PERL_CFLAGS)
+		AC_SUBST(PERL_LDFLAGS)
+		AC_SUBST(PERL_LIB_DIR)
+		AC_DEFINE(HAVE_PERL)
+	fi
+
+	dnl ** building from objdir..
+	if test ! -d plugins/perl/xs; then
+		mkdir -p plugins/perl/xs
+	fi
+fi
+
+dnl ** check what we want to build
+AM_CONDITIONAL(BUILD_TEXTUI, test "$want_textui" = "yes")
+AM_CONDITIONAL(BUILD_IRSSIBOT, test "$want_irssibot" = "yes")
+AM_CONDITIONAL(BUILD_PLUGINS, test "$want_plugins" = "yes")
+AM_CONDITIONAL(BUILD_SERVERTEST, test "$want_servertest" = "yes")
+AM_CONDITIONAL(HAVE_MYSQL, test "$want_mysql" = "yes")
+AM_CONDITIONAL(HAVE_PERL, test "$want_perl" = "yes")
+
+AC_SUBST(MYSQL_LIBS)
+
+dnl **
+dnl ** Keep all the libraries here so each frontend doesn't need to
+dnl ** keep track of them all
+dnl **
+dnl ** (these could be made configurable)
+
+CHAT_MODULES="irc"
+irc_MODULES="dcc flood notifylist"
+if test "x$build_modules" != "x"; then
+	irc_MODULES="$irc_MODULES $build_modules"
+fi
+
+dnl ****************************************
+
+AC_SUBST(CHAT_MODULES)
+AC_SUBST(irc_MODULES)
+
+CORE_LIBS="../core/libcore.la ../lib-config/libirssi_config.la ../lib-popt/libpopt.la"
+if test "$want_perl" = "yes"; then
+	PERL_LIBS="../perl/libperl.la"
+else
+	PERL_LIBS=""
+fi
+FE_COMMON_LIBS="../fe-common/core/libfe_common_core.la"
+
+CHAT_LIBS=""
+for c in $CHAT_MODULES; do
+	module_inits=""
+	module_deinits=""
+	fe_module_inits=""
+	fe_module_deinits=""
+	CHAT_LIBS="$CHAT_LIBS ../$c/lib$c.la ../$c/core/lib${c}_core.la"
+	if test -d $srcdir/src/fe-common/$c; then
+		FE_COMMON_LIBS="$FE_COMMON_LIBS ../fe-common/$c/libfe_common_$c.la"
+	fi
+	for s in `eval echo \\$${c}_MODULES`; do
+		CHAT_LIBS="$CHAT_LIBS ../$c/$s/.libs/lib${c}_$s.a"
+		module_inits="$module_inits ${c}_${s}_init();"
+		module_deinits="${c}_${s}_deinit(); $module_deinits"
+		if test -d $srcdir/src/fe-common/$c/$s; then
+			FE_COMMON_LIBS="$FE_COMMON_LIBS ../fe-common/$c/$s/.libs/libfe_common_${c}_$s.a"
+			fe_module_inits="$fe_module_inits fe_${c}_${s}_init();"
+			fe_module_deinits="fe_${c}_${s}_deinit(); $fe_module_deinits"
+		fi
+	done
+
+	file="$srcdir/src/$c/$c.c"
+        echo "/* this file is automatically generated by configure - don't change */" > $file
+	echo "void ${c}_core_init(void); void ${c}_core_deinit(void);" >> $file
+	if test "x$module_inits" != "x"; then
+        	echo "$module_inits" | $sedpath -e 's/()/(void)/g' -e 's/ /void /g' >> $file
+        	echo "$module_deinits" | $sedpath -e 's/[ ]*$//' -e 's/()/(void)/g' -e 's/ /void /g' -e 's/^/void /' >> $file
+	fi
+        echo "void ${c}_init(void) { ${c}_core_init(); $module_inits }" >> $file
+        echo "void ${c}_deinit(void) { $module_deinits ${c}_core_deinit(); }" >> $file
+
+	if test -d $srcdir/src/fe-common/$c; then
+	        file="$srcdir/src/fe-common/$c/${c}-modules.c"
+	        echo "/* this file is automatically generated by configure - don't change */" > $file
+	        echo "$fe_module_inits" | $sedpath -e 's/()/(void)/g' -e 's/ /void /g' >> $file
+	        echo "$fe_module_deinits" | $sedpath -e 's/[ ]*$//' -e 's/()/(void)/g' -e 's/ /void /g' -e 's/^/void /' >> $file
+	        echo "void fe_${c}_modules_init(void) { $fe_module_inits }" >> $file
+	        echo "void fe_${c}_modules_deinit(void) { $fe_module_deinits }" >> $file
+	fi
+done
+
+dnl **
+dnl ** internationalization support
+dnl **
+
+ALL_LINGUAS="pl fi pt_BR fr de"
+AM_GNU_GETTEXT
+
+dnl ** common libraries needed by frontends
+COMMON_NOUI_LIBS="$PERL_LIBS $CHAT_LIBS $CORE_LIBS $INTLLIBS"
+COMMON_LIBS="$FE_COMMON_LIBS $COMMON_NOUI_LIBS"
+AC_SUBST(COMMON_NOUI_LIBS)
+AC_SUBST(COMMON_LIBS)
+
+dnl **
+dnl ** memory debugging
+dnl **
+
+if test "x$want_memdebug" = "xyes"; then
+	AC_DEFINE(MEM_DEBUG)
+fi
+AM_CONDITIONAL(BUILD_MEMDEBUG, test "x$want_memdebug" = "xyes")
+
+dnl **
+dnl ** IPv6 support
+dnl **
+
+if test "x$want_ipv6" = "xyes"; then
+	AC_DEFINE(HAVE_IPV6)
+fi
+
+AC_OUTPUT(
+Makefile
+po/Makefile.in
+intl/Makefile
+src/Makefile
+src/core/Makefile
+src/irc/Makefile
+src/irc/core/Makefile
+src/irc/bot/Makefile
+src/irc/dcc/Makefile
+src/irc/notifylist/Makefile
+src/irc/flood/Makefile
+src/fe-common/Makefile
+src/fe-common/core/Makefile
+src/fe-common/irc/Makefile
+src/fe-common/irc/dcc/Makefile
+src/fe-common/irc/flood/Makefile
+src/fe-common/irc/notifylist/Makefile
+src/fe-none/Makefile
+src/fe-text/Makefile
+src/lib-config/Makefile
+src/lib-popt/Makefile
+src/perl/Makefile
+src/perl/xs/Makefile.PL
+servertest/Makefile
+scripts/Makefile
+docs/Makefile
+docs/help/Makefile
+docs/help/in/Makefile
+stamp.h
+irssi.spec
+irssi-version.h
+irssi-config)
+
+dnl ** for building from objdir
+if test "x$want_perl" = "xyes"; then
+	old_dir=`pwd` && cd $srcdir && whole_dir=`pwd` && cd $old_dir
+
+	if test "x$old_dir" != "x$whole_dir"; then
+		for file in $whole_dir/src/perl/xs/typemap $whole_dir/src/perl/xs/module.h $whole_dir/src/perl/xs/*.xs; do
+			ln -sf $file `echo $file|sed "s?$whole_dir/??"`
+		done
+	fi
+fi
+
+echo
+
+if test "$curses_error" != "xyes"; then
+	echo "Building text frontend ..... : $want_textui"
+else
+	echo "Building text frontend ..... : NO!! (Because curses was not found, specify the path to it with --with-curses=/dir)"
+fi
+echo "Building irssi-bot ......... : $want_irssibot"
+echo "Building with IPv6 support . : $want_ipv6"
+echo "Building with Perl support . : $want_perl"
+if test "x$want_perl" = "xyes"; then
+	if test "x$PERL_LIB_DIR" = "x"; then
+		echo "Perl library directory ..... : (default - usually /usr/local/lib/perl_site)"
+	else
+		echo "Perl library directory ..... : $PERL_LIB_DIR"
+	fi
+fi
+echo "Install prefix ............. : $prefix"
+

@@ -1,0 +1,60 @@
+
+ Irssi's colors that you can use in text formats etc. :
+
+                           text            text            background
+   ---------------------------------------------------------------------
+   %k      %K      %0      black           bold black      black
+   %r      %R      %1      red             bold red        red
+   %g      %G      %2      green           bold green      green
+   %y      %Y      %3      yellow          bold yellow     yellow
+   %b      %B      %4      blue            bold blue       blue
+   %m      %M      %5      magenta         bold magenta    magenta
+   %p      %P              magenta (think: purple)
+   %c      %C      %6      cyan            bold cyan       cyan
+   %w      %W      %7      white           bold white      white
+   %n                      All colors turned off
+   %U                      Underline on/off
+   %8                      Reverse on/off
+   %9      %_              Bold on/off
+   %:                      Insert newline
+   %|                      Marks the indentation position
+   %%                      A single %
+
+ MIRC colors that you can use when writing text to channel and with
+ hilighting text:
+
+               foreground          background
+   -------------------------------------------------------
+	0          white               black
+	1          ligh gray           ---
+	2          blue                blue
+	3          green               green
+	4          light red           ---
+	5          orange              orange
+	6          magenta (purple)    magenta
+	7          red                 red
+	8          yellow              ---
+	9          light green         ---
+   10          cyan                cyan
+   11          light cyan          ---
+   12          light blue          ---
+   13          light magenta       ---
+   14          gray                black on black 
+   15          light gray          black on black
+                                   gray  on light gray (with bold)
+
+ These colors may differ depending on your terminal.
+
+ How to use these colors ('#' means a number as color code):
+ 
+ <Ctrl>-b        set bold
+ <Ctrl>-c#[,#]   set foreground and optionally background color
+ <Ctrl>-o        reset all formats to plain text
+ <Ctrl>-v        set inverted color mode
+ <Ctrl>-_        set underline
+ <Ctrl>-7        same as <Ctrl>-_
+ 
+ To reset a mode set it again, f.e.
+   <Ctrl>-c3<Ctrl>-vFOO<Ctrl>-vBAR
+ creates black on green FOO followed by a green on black BAR
+   

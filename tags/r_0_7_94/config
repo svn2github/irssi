@@ -1,0 +1,88 @@
+servers = (
+  { address = "irc.funet.fi"; ircnet = IRCNet; port = 6667; },
+  { address = "irc.efnet.net"; ircnet = EFNet; port = 6667; },
+  { address = "irc.undernet.net"; ircnet = Undernet; port = 6667; },
+  { address = "irc.dal.net"; ircnet = DALNet; port = 6667; },
+  { address = "irc.openprojects.net"; ircnet = OPN; port = 6667; },
+  { address = "irc.ptlink.net"; ircnet = PTlink; port = 6667; }
+);
+
+ircnets = {
+  IRCNet = { max_kicks = 4; max_modes = 3; max_msgs = 5; max_whois = 4; };
+  EFNet = { max_kicks = 4; max_modes = 4; max_msgs = 3; };
+  Undernet = { max_kicks = 4; max_modes = 3; max_msgs = 3; };
+  DALNet = { max_kicks = 4; max_modes = 6; max_msgs = 3; };
+  OPN = { max_kicks = 1; max_modes = 6; max_msgs = 100; };
+  PTLink = { max_kicks = 1; max_modes = 6; max_msgs = 100; };
+};
+
+channels = (
+  {
+    name = "#irssi";
+    ircnet = ircnet;
+    autojoin = No;
+  },
+  {
+    name = "#irssi";
+    ircnet = efnet;
+    autojoin = No;
+  }
+);
+
+aliases = {
+  J = "join";
+  LEAVE = "part";
+  BYE = "quit";
+  EXIT = "quit";
+  SIGNOFF = "quit";
+  DESCRIBE = "action";
+  DATE = "time";
+  HOST = "userhost";
+  LAST = "lastlog";
+  SAY = "msg *";
+  WI = "whois";
+  WII = "whois $0 $0";
+  WW = "whowas";
+  W = "who $C";
+  N = "names $C";
+  M = "msg";
+  T = "topic";
+  C = "clear";
+  CL = "clear";
+  K = "kick";
+  KB = "kickban";
+  KN = "knockout";
+  BANS = "ban";
+  B = "ban";
+  MUB = "unban *";
+  UB = "unban";
+  IG = "ignore";
+  UNIG = "unignore";
+  SB = "scrollback";
+  UMODE = "mode $N";
+  WC = "window close";
+  WN = "window new hide";
+  SV = "say Irssi $J - http://irssi.org";
+  GOTO = "sb goto";
+};
+
+popups = (
+  { label = "<MULTICOMMA>Whois"; command = "/whois %s"; },
+  { label = "DCC Send File"; command = "/dcc send %s"; },
+  { label = "Open DCC Chat"; command = "/dcc chat %s"; },
+  { label = Query; command = "/query %s"; },
+  { label = "<MENU><OP>"; command = "Op"; },
+  { label = "<MULTI>Op"; command = "/op %s"; },
+  { label = "<MULTI>Deop"; command = "/deop %s"; },
+  { label = "<MULTI>Voice"; command = "/voice %s"; },
+  { label = "<MULTI>Devoice"; command = "/devoice %s"; },
+  { label = "<KICK>Kick"; command = "/kick %s %s"; },
+  { label = "<MULTI>Ban"; command = "/ban %s"; },
+  { label = "<KICK>Kick+ban"; command = "/kickban %s %s"; },
+  { label = "<KICK>Knockout"; command = "/knockout %s %s"; },
+  { label = "</MENU>"; command = ""; },
+  { label = "<MENU>"; command = "CTCP"; },
+  { label = Ping; command = "/ping %s"; },
+  { label = Version; command = "/ver %s"; },
+  { label = "</MENU>"; command = ""; }
+);
