@@ -1,0 +1,177 @@
+
+*** New stuff in TODO, try to get rid of these :)
+
+( - translate all those TODO items I have in finnish to english ;) )
+ - /ignore -activity .. would ignore it just in window activity list,
+   not hide the text.
+ - autoignoring:
+     - it shouldn't save them to config file
+     - it could be merged with /ignore -time
+ - fix the proxy plugin to work again..
+ - /server <number> would connect to n'th server in list. show the numbers
+   with /server list
+ - when dcc chat is accepted and query exists from the same nick, replace
+   the query window with the dcc chat window.
+ - autoload specified modules. /load xx could also try to load fe-common/xx
+   and fe-text/xx modules automatically.
+ - all options that want time as argument, allow to use s|m|h|d, default to
+   seconds. when sending reply to user, use the time formatting too, not
+   just x seconds or minutes ..
+ - /savewindows: save split windows, save window logs. window log names
+   should be moved to WINDOW_REC...
+ - automatically add queried nicks to notify list temporarily .. display
+   the notifys for the nick in the query window
+ - Some problems with idle notify lists, "cras [IRCNet] [@] [] just stopped
+   idling" was print to screen with some NULL arguments in text..
+
+ - /BIND: key definitions should be changed to be more epic-like.. :
+     /bind ^[ key meta, /bind meta-O key meta2, /bind meta-[ key meta2
+     /bind meta2-c echo Ctrl-Left pressed
+   and maybe
+     /bind meta2-C key left, /bind meta-left echo meta-left pressed
+ - automatically switch to status window when using commands that always
+   print their output to status window, like /whois.
+ - automatic whowas if whois wasn't found should be moved to fe-common.
+   it could also print something like "nick $0 not in IRC, but this user
+   WAS in IRC:"
+ - Add command for changing automatic replaces (/replace)
+ - bash-style (or whatever it shoulda be called) tab-completion
+ - /last 05032 ... didn't really do what I wanted :) maybe I should change
+   the syntax to have -max parameter instead?
+ - commands to move channels and servers in the config list, to set the
+   join/connect order of them.
+ - statusbar:
+     - you can't configure it in any way!
+     - move it to fe-common, make some "statusbar" signal .. maybe
+       statusbar items could be printed with printformat() and statusbar
+       would be just another small window? .. or maybe not exactly, but
+       something like that :)
+     - when starting to run out of space some items could be made smaller,
+       activity for example .. make some generic flag for items to use.
+     - add user counts (ops/voices/normal/total)
+ - themes:
+    - document the different formats briefly :)
+    - logging messages could be printed with a different theme
+ - Make /SET HOLD_MODE
+ - /CAT should pause on every screenful of text, this should be some kind of
+   printtext_multiline_paused() function which would use some callback to
+   ask for new text.
+ - /msg =dcc_chatti,#kanava doesn't work - fix it somehow that also different
+   chat plugins could use the same /msg command. /CTCP too.
+ - /NOTIFY -once - notify only once when the user comes to IRC, forget this
+   after it.
+ - /NOTIFY -comment xxx - add a comment to notify. print the comment when
+   user comes to irc.
+ - "Should we check people in notify list when you're away" option
+ - Implement /EXEC, /ON and /TIMER commands
+ - All those options to /WHO and /LIST commands that EPIC has
+ - /SCROLLBACK FIND ?
+ - nick/channel lists at right side of the text version of irssi. Ctrl-N
+   for example could hide/show them. add mouse support for it.
+ - /password command that asks you to type the password to entry line and
+   would hide it with asterisks, good if people spy on you :)
+
+*** Bugs
+
+ - netsplits don't work right if quits/joins happen fast multiple times..
+   maybe some other bugs too
+ - still some problems in detecting floods right? not sure, couldn't
+   reproduce the problem again..
+ - match_wildcards(), mask="*a?c*", data="abdabc"
+ - multiple dcc connections from different irc networks from same nick
+   doesn't work. Maybe create "server nick" and "refer nick" variables to
+   DCC_REC?
+
+*** GTK UI
+
+ - %| doesn't work with irssi text widget
+ - some problems when using multiple windows with focus being all the time in
+   one of the windows and it can't be changed to different window?! Probably
+   has something to do with click to focus.
+ - split windows are buggy, destroying them doesn't really work well..
+ - mirc ctcp togglemenuitem isn't updated right
+
+*** Big things
+
+ - some sort of address book? our own irssi ctcp to ask for other irssi users
+   for their information (of course not without asking (except optionally))..
+   could be nice also to automatically update it, keep track of all seen
+   users gathered when joining channels, whois, who, etc. commands.
+   automatically updating information could be host masks, nicks, ips, seen in
+   channels, operator in channels, .. user specified checks like last topic or
+   mode changes or even msgs to you/some channel/with some keyword. great for
+   spying people ;) maybe even useful sometimes..
+
+   .. but what database would be best for this?
+
+ - GTK (non-GNOME) version: icons to toolbars, accelerators to menus
+ - Windows style MDI windows are possible with GtkFixed .. Some people would
+   like this.. too much job for me, it would need building the MDI windows
+   ourself (title bar, borders, resizing, etc.)
+
+ - online help, documentation, ...
+ - plugins:
+     - scheme, tcl, python scripting? eggdrop/epic compatible scripting?
+     - IRC bot, eggdrop is too old, needs a replacement ;) (started)
+     - DCC file server, I'm not too excited about this, maybe someone else
+       wants to do it..
+     - Multiplayer games! :) Chess, tic-tac-toe, othello, battleship, tetris,
+       etc. Existing games should probably be used .. though there doesn't
+       seem to be any of these (except tetris) for gnome right now..
+     - audio / video chat :)
+
+*** Needs rethinking ..
+
+ * Notify list GUI
+ - _one_ popup dialog could open which lists all nicks in notifylist, maybe
+   sorted by arrival time, display the dates, latest joined could be with
+   different color? etc.
+ - nick-specific options:
+    - pop up the dialog
+    - run some command (like /exec as soon as I get that done :)
+
+ * common api for statusbar handling
+ - it should work just as well in text mode and gui, colors could be done
+   with the normal % formats. GUI just ignores the colors..
+ - display number of ops, voices, normals and ircops in statusbar
+
+ * API for creating/modifying menus and toolbar, especially from plugins
+ - at least one configurable menu ("usermenu"), or maybe make the whole
+   menubar user configurable
+
+
+*** Stuff to do
+
+ - you could configure which events (whois, notify, etc.) to show in what
+   windows (all, current, status, msgs)
+ - autoaway when idling
+ - implement requesting files with DCC GET from remote client for dcc file
+   servers. good for people behind firewalls.
+ - /CLONES command (with script)
+ - {}|~ are same as []\^ (not in all irc networks) - does this really affect
+   irssi at all..?
+
+*** ..in GTK UI
+
+ - itext:
+     - save/find text
+     - text selection draws the entire selection every time you move the
+       mouse...
+     - if some other window has got much text, switching to it first time
+       takes some time..?
+ - editor in setup for ~/.irssi/startup
+ - dcc floods could pop up lots of dialogs..
+ - gui help
+ - change signal handling in gui-gnome so that the actual drawing and
+   functionality are in different signals, so that plugin could change the
+   whole look and feel of irssi.
+ - currently irssi sends USERHOST commands every now and then to find out
+   who are away and who are not.. optionally it could instead just watch if
+   someone hasn't written anything to channel in n minutes and mark it "away"
+   to nicklist.
+ - check new irssi versions with http rather than with irssibot..
+ - gnome statubar:
+    - clock?
+    - dcc transfer meter (gtk progressbar)
+ - dcc send: allow selection of multiple files to send (also for dnd from
+   gmc!) Allow dropping files to anywhere in irssi.

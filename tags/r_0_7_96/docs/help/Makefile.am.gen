@@ -1,0 +1,10 @@
+helpdir = $(datadir)/irssi/help
+
+help_DATA = \
+	@HELPFILES@
+
+EXTRA_DIST = \
+	Makefile.am.gen \
+	$(help_DATA)
+
+SUBDIRS = in
