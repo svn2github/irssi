@@ -1,0 +1,10 @@
+*.gmo
+*.mo
+Makefile
+Makefile.in
+Makefile.in.in
+POTFILES
+POTFILES.in
+cat-id-tbl.c
+irssi.pot
+stamp-cat-id
